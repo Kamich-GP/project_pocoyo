@@ -19,14 +19,22 @@
             </ul>
             <span class="me-2">Поиск товара</span>
             <div>
-                <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-                    <input type="search" id="search" class="form-control" style="width: 450px;" placeholder="Поиск..." aria-label="Search">
-            </form>
+                <form action="/search" method="post" class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+                    {% csrf_token %}
+                    <input name="search_product" type="search" id="search" class="form-control" style="width: 450px;" placeholder="Поиск..." aria-label="Search" required>
+                </form>
             </div>
-            <div class="text-end" >
-                <button class="btn btn-primary">Регистрация</button>
-                <button class="btn btn-primary">Войти</button>
+            {% if user.is_authenticated %}
+            <div class="text-end">
+                <button class="btn btn-primary">Корзина</button>
+                <button class="btn btn-primary">Выйти</button>
             </div>
+            {% else %}
+            <div class="text-end">
+                <a href="/register" class="btn btn-primary" role="button">Регистрация</a>
+                <a href="{% url 'login' %}" class="btn btn-primary" role="button">Войти</a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </header>
