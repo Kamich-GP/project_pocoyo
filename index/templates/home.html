@@ -26,8 +26,8 @@
             </div>
             {% if user.is_authenticated %}
             <div class="text-end">
-                <button class="btn btn-primary">Корзина</button>
-                <button class="btn btn-primary">Выйти</button>
+                <a href="/cart" class="btn btn-primary" role="button">Корзины</a>
+                <a href="/logout" class="btn btn-primary" role="button">Выйти</a>
             </div>
             {% else %}
             <div class="text-end">
@@ -56,8 +56,9 @@
         <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
             {% for p in products %}
             <div class="feature col">
+                <img src="{{ p.product_photo.url }}" width="300" height="300" alt="">
                 <h3 class="fs-2 text-body-emphasis">{{ p }}</h3>
-                <p>{{ p.product_des }}</p>
+                <p>{{ p.product_des|slice:64 }}...</p>
                 <a href="/product/{{ p.id }}" class="icon-link">Подробнее -></a>
             </div>
             {% endfor %}

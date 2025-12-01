@@ -4,6 +4,10 @@ from . import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django import views
+import telebot
+
+bot = telebot.TeleBot('TOKEN')
+admin_id = 'ADMIN_ID'
 
 # Create your views here.
 # Главная страница
@@ -91,3 +95,43 @@ def add_to_cart(request, pk):
                                 user_pr_amount=user_count).save()
             return redirect('/')
         return redirect(f'/product/{pk}')
+
+# Отображение корзины
+def cart_page(request):
+    # Достаем данные из БД
+    user_cart = models.Cart.objects.filter(user_id=request.user.id)
+    # Подсчет итоговых стоимостей
+    totals = [round(t.user_pr_amount * t.user_product.product_price, 2) for t in user_cart]
+    # Передаем данные на Frontend
+    context = {
+        'cart': user_cart,
+        'total': round(sum(totals), 2)
+    }
+
+    # Оформление заказа
+    if request.method == 'POST':
+        text = (f'Новый заказ!\n'
+                f'Клиент: {User.objects.get(id=request.user.id).email}\n\n')
+        new_totals = []
+        for i in user_cart:
+            product = models.Product.objects.get(id=i.user_product.id) # Достаем выбранный товар из БД
+            user_amount = int(request.POST.get(f'amount_{i.user_product.id}')) # Достаем кол-во с формы
+            product.product_count = product.product_count - user_amount
+            product.save(update_fields=['product_count'])
+            new_totals.append(round(user_amount * product.product_price, 2))
+            text += f'Товар: {i.user_product}\nКол-во: {user_amount}\n\n'
+        text += f'Итого: ${round(sum(new_totals), 2)}'
+        bot.send_message(admin_id, text)
+        user_cart.delete()
+        return redirect('/')
+    return render(request, 'cart.html', context)
+
+# Удаление из корзины
+def del_from_cart(request, pk):
+    models.Cart.objects.filter(user_product=models.Product.objects.get(id=pk)).delete()
+    return redirect('/cart')
+
+# Выход из аккаунта
+def logout_view(request):
+    logout(request)
+    return redirect('/')
