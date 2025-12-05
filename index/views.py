@@ -5,9 +5,17 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django import views
 import telebot
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
+# Работа с Telegram ботом
 bot = telebot.TeleBot('TOKEN')
 admin_id = 'ADMIN_ID'
+
+# Работа с Google таблицами
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_name('index/credentials.json', scope)
+gs = gspread.authorize(creds)
 
 # Create your views here.
 # Главная страница
@@ -114,12 +122,19 @@ def cart_page(request):
                 f'Клиент: {User.objects.get(id=request.user.id).email}\n\n')
         new_totals = []
         for i in user_cart:
+            # Подготовка текста для Telegram бота
             product = models.Product.objects.get(id=i.user_product.id) # Достаем выбранный товар из БД
             user_amount = int(request.POST.get(f'amount_{i.user_product.id}')) # Достаем кол-во с формы
             product.product_count = product.product_count - user_amount
             product.save(update_fields=['product_count'])
             new_totals.append(round(user_amount * product.product_price, 2))
             text += f'Товар: {i.user_product}\nКол-во: {user_amount}\n\n'
+
+            # Добавление данных в Google таблицы
+            table = gs.open('Заказы')
+            sheet = table.sheet1
+            sheet.append_row([User.objects.get(id=request.user.id).email, i.user_product.product_name, user_amount])
+
         text += f'Итого: ${round(sum(new_totals), 2)}'
         bot.send_message(admin_id, text)
         user_cart.delete()

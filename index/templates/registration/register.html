@@ -1,3 +1,4 @@
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -64,6 +65,9 @@
             <input type="password" name="password2" id="password2" class="form-control border-secondary" style="width: 70%; margin-left: 15%;" required>
         </div>
         <button type="submit" class="btn btn-warning mb-3" style="margin-left: 30%;">Зарегистрироваться</button>
+        <a href="{% provider_login_url 'google' process='login' %}" class="btn btn-primary" style="margin-left: 30%;" role="button">
+            Войти через Google
+        </a>
     </form>
 </div>
 </body>
