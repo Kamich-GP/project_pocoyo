@@ -44,7 +44,7 @@
             {% for p in products %}
             <div class="feature col">
                 <h3 class="fs-2 text-body-emphasis">{{ p }}</h3>
-                <p>{{ p.product_des }}</p>
+                <p>{{ p.product_des|slice:64 }}...</p>
                 <a href="/product/{{ p.id }}" class="icon-link">Подробнее -></a>
             </div>
             {% endfor %}
